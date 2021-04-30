@@ -7,10 +7,14 @@ import classes from "./AvailableMeals.module.css";
 
 const AvailableMeals = () => {
   const [meals, setMeals] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch avaliable meals from firebase
   useEffect(() => {
     const fetchMeals = async () => {
+      // Loading
+      setIsLoading(true);
+
       const res = await fetch(`${api}/meals.json`);
       const data = await res.json();
 
@@ -26,6 +30,7 @@ const AvailableMeals = () => {
 
       // Set transform data to state
       setMeals(arrData);
+      setIsLoading(false);
     };
 
     fetchMeals();
@@ -44,6 +49,7 @@ const AvailableMeals = () => {
   return (
     <section className={classes.meals}>
       <Card>
+        {isLoading && <p style={{ color: "blue" }}>Loading...</p>}
         <ul>{mealsList}</ul>
       </Card>
     </section>
