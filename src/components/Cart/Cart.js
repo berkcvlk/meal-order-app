@@ -1,11 +1,14 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
+import { api } from "../../firebase";
 
 import classes from "./Cart.module.css";
 import Modal from "../UI/Modal";
 import CartContext from "../../store/cart-context";
 import CartItem from "./CartItem";
+import Checkout from "./Checkout";
 
 const Cart = (props) => {
+  const [isCheckout, setIsCheckout] = useState(false);
   const cartCtx = useContext(CartContext);
 
   const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
@@ -17,6 +20,20 @@ const Cart = (props) => {
 
   const cartItemAddHandler = (item) => {
     cartCtx.addItem({ ...item, amount: 1 });
+  };
+
+  const orderHandler = () => {
+    setIsCheckout(true);
+  };
+
+  const submitOrderHandler = (userData) => {
+    fetch(`${api}/orders.json`, {
+      method: "POST",
+      body: JSON.stringify({
+        user: userData,
+        orderedItems: cartCtx.items,
+      }),
+    });
   };
 
   const cartItems = (
@@ -36,6 +53,19 @@ const Cart = (props) => {
     </ul>
   );
 
+  const modalActions = (
+    <div className={classes.actions}>
+      <button onClick={props.onToggleCart} className={classes["button--alt"]}>
+        Close
+      </button>
+      {hasItems && (
+        <button className={classes.button} onClick={orderHandler}>
+          Order
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <Modal onToggleCart={props.onToggleCart}>
       {cartItems}
@@ -50,12 +80,13 @@ const Cart = (props) => {
           <span>{totalAmount}</span>
         </span>
       </div>
-      <div className={classes.actions}>
-        <button onClick={props.onToggleCart} className={classes["button--alt"]}>
-          Close
-        </button>
-        {hasItems && <button className={classes.button}>Order</button>}
-      </div>
+      {hasItems && isCheckout && (
+        <Checkout
+          onConfirm={submitOrderHandler}
+          onToggle={props.onToggleCart}
+        />
+      )}
+      {!isCheckout && modalActions}
     </Modal>
   );
 };

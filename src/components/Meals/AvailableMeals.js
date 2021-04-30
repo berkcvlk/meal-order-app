@@ -16,8 +16,7 @@ const AvailableMeals = () => {
       // Loading
       setIsLoading(true);
 
-      const res = await fetch(`${api}/msadasd`);
-      console.log(res);
+      const res = await fetch(`${api}/meals.json`);
 
       if (!res.ok) {
         throw new Error("Something went wrong!");
