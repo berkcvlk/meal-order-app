@@ -8,6 +8,7 @@ import classes from "./AvailableMeals.module.css";
 const AvailableMeals = () => {
   const [meals, setMeals] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [httpError, setHttpError] = useState();
 
   // Fetch avaliable meals from firebase
   useEffect(() => {
@@ -15,7 +16,13 @@ const AvailableMeals = () => {
       // Loading
       setIsLoading(true);
 
-      const res = await fetch(`${api}/meals.json`);
+      const res = await fetch(`${api}/msadasd`);
+      console.log(res);
+
+      if (!res.ok) {
+        throw new Error("Something went wrong!");
+      }
+
       const data = await res.json();
 
       // Transform object data to array
@@ -33,8 +40,27 @@ const AvailableMeals = () => {
       setIsLoading(false);
     };
 
-    fetchMeals();
+    fetchMeals().catch((error) => {
+      setIsLoading(false);
+      setHttpError(error.message);
+    });
   }, []);
+
+  if (isLoading) {
+    return (
+      <section style={{ textAlign: "center", color: "white" }}>
+        <p>Loading</p>
+      </section>
+    );
+  }
+
+  if (httpError) {
+    return (
+      <section style={{ textAlign: "center", color: "red" }}>
+        <p>{httpError}</p>
+      </section>
+    );
+  }
 
   const mealsList = meals.map((meal) => (
     <MealItem
@@ -49,7 +75,6 @@ const AvailableMeals = () => {
   return (
     <section className={classes.meals}>
       <Card>
-        {isLoading && <p style={{ color: "blue" }}>Loading...</p>}
         <ul>{mealsList}</ul>
       </Card>
     </section>
