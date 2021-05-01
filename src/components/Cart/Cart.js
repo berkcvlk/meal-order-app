@@ -9,6 +9,8 @@ import Checkout from "./Checkout";
 
 const Cart = (props) => {
   const [isCheckout, setIsCheckout] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [didSubmit, setDidSubmit] = useState(false);
   const cartCtx = useContext(CartContext);
 
   const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
@@ -26,14 +28,21 @@ const Cart = (props) => {
     setIsCheckout(true);
   };
 
-  const submitOrderHandler = (userData) => {
-    fetch(`${api}/orders.json`, {
+  const submitOrderHandler = async (userData) => {
+    setIsSubmitting(true);
+
+    await fetch(`${api}/orders.json`, {
       method: "POST",
       body: JSON.stringify({
         user: userData,
         orderedItems: cartCtx.items,
       }),
     });
+
+    // Reset Submitting
+    setIsSubmitting(false);
+    setDidSubmit(true);
+    cartCtx.clearCart();
   };
 
   const cartItems = (
@@ -66,8 +75,8 @@ const Cart = (props) => {
     </div>
   );
 
-  return (
-    <Modal onToggleCart={props.onToggleCart}>
+  const cardModalContent = (
+    <React.Fragment>
       {cartItems}
       <div>
         {!hasItems && (
@@ -87,6 +96,26 @@ const Cart = (props) => {
         />
       )}
       {!isCheckout && modalActions}
+    </React.Fragment>
+  );
+
+  const isSubmittingModalContent = (
+    <p style={{ color: "orange" }}>Sending Order Data...</p>
+  );
+  const didSubmitModalContent = (
+    <React.Fragment>
+      <p style={{ color: "green" }}>Order sent successfully!</p>
+      <button onClick={props.onToggleCart} className={classes.button}>
+        Close
+      </button>
+    </React.Fragment>
+  );
+
+  return (
+    <Modal onToggleCart={props.onToggleCart}>
+      {!isSubmitting && !didSubmit && cardModalContent}
+      {isSubmitting && isSubmittingModalContent}
+      {didSubmit && didSubmitModalContent}
     </Modal>
   );
 };
